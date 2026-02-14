@@ -1,0 +1,47 @@
+# ======================
+# Dependencies (all levels)
+# ======================
+node_modules/
+**/node_modules/
+
+# ======================
+# Environment files
+# ======================
+.env
+.env.*
+!.env.example
+
+# ======================
+# ESLint
+# ======================
+eslint.config.js
+
+# ======================
+# Build outputs
+# ======================
+dist/
+build/
+**/dist/
+**/build/
+
+# ======================
+# Logs
+# ======================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ======================
+# OS / Editor junk
+# ======================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ======================
+# Optional cache
+# ======================
+.cache
+.tmp

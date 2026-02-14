@@ -1,0 +1,171 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===============================
+   Base
+================================ */
+@layer base {
+  body {
+    @apply bg-background-main text-text-primary min-h-screen;
+  }
+
+  * {
+    @apply antialiased;
+  }
+}
+
+/* ===============================
+   Components
+================================ */
+@layer components {
+  /* Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background-color: var(--color-background-muted, #23272f);
+    border-radius: 0.5rem;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-background-border rounded hover:bg-ai-300;
+  }
+
+  /* Glass panel (light version) */
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-background-border;
+  }
+
+  /* Gradient text (AI focus) */
+  .gradient-text {
+    /* @apply bg-gradient-to-r from-ai-500 to-ai-700 bg-clip-text text-transparent; */
+    @apply bg-gradient-to-r from-ai-500 to-primary-400 bg-clip-text text-transparent;
+  }
+
+  /* Card hover polish */
+  .card-hover {
+    @apply transition-all duration-300 hover:bg-ai-50 hover:border-ai-300 hover:-translate-y-1;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-background-card border border-background-border rounded-2xl shadow-card p-6 transition-all duration-300;
+  }
+}
+
+/* ===============================
+   Utilities
+================================ */
+@layer utilities {
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+}
+/* ===============================
+   Html body
+================================ */
+body {
+  /* Gradient background */
+  background: linear-gradient(120deg, #f5f3ff 0%, #e0f2fe 100%);
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Bubble effect */
+.bg-bubbles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-bubbles span {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  opacity: 0.25;
+  background: linear-gradient(135deg, #8b5cf6 0%, #38bdf8 100%);
+  animation: bubbleMove 5s linear infinite;
+}
+
+/* Left bubbles */
+.bubble-left-1 {
+  width: 120px;
+  height: 120px;
+  left: 10%;
+  top: 20%;
+}
+.bubble-left-2 {
+  width: 80px;
+  height: 80px;
+  left: 70%;
+  top: 10%;
+}
+.bubble-left-3 {
+  width: 100px;
+  height: 100px;
+  left: 50%;
+  top: 70%;
+}
+.bubble-left-4 {
+  width: 60px;
+  height: 60px;
+  left: 80%;
+  top: 60%;
+}
+.bubble-left-5 {
+  width: 140px;
+  height: 140px;
+  left: 30%;
+  top: 80%;
+}
+/* Right bubbles */
+.bubble-right-1 {
+  width: 80px;
+  height: 80px;
+  right: 5%;
+  top: 10%;
+  left: unset;
+}
+.bubble-right-2 {
+  width: 100px;
+  height: 100px;
+  right: 10%;
+  top: 60%;
+  left: unset;
+}
+.bubble-right-3 {
+  width: 60px;
+  height: 60px;
+  right: 15%;
+  top: 80%;
+  left: unset;
+}
+
+@keyframes bubbleMove {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-40px) scale(1.1);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
