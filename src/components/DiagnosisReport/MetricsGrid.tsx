@@ -30,13 +30,24 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({ impact }) => {
 
   if (metrics.length === 0) return null;
 
-  const calculateImprovement = (current: any, optimized: any) => {
+  const calculateImprovement = (
+    current: number | string | undefined,
+    optimized: number | string | undefined,
+  ) => {
     const currentNum =
-      typeof current === "string" ? parseFloat(current) : current;
+      typeof current === "string" ? parseFloat(current) : Number(current);
     const optimizedNum =
-      typeof optimized === "string" ? parseFloat(optimized) : optimized;
+      typeof optimized === "string" ? parseFloat(optimized) : Number(optimized);
 
-    if (isNaN(currentNum) || isNaN(optimizedNum)) return "0";
+    if (
+      current === undefined ||
+      optimized === undefined ||
+      Number.isNaN(currentNum) ||
+      Number.isNaN(optimizedNum) ||
+      currentNum === 0
+    ) {
+      return "0";
+    }
 
     const improvement = ((optimizedNum - currentNum) / currentNum) * 100;
     return improvement.toFixed(0);
@@ -44,8 +55,8 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({ impact }) => {
 
   return (
     <div>
-      <h4 className="text-sm font-semibold text-ai-500 mb-3">
-        📊 Expected Improvement
+      <h4 className="text-sm font-semibold text-ai-400 mb-3">
+        Expected improvement
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {metrics.map((metric, index) => {
@@ -58,16 +69,16 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({ impact }) => {
           return (
             <div
               key={index}
-              className="bg-ai-50 rounded-lg p-4 border border-ai-100"
+              className="bg-background-soft rounded-lg p-4 border border-background-border"
             >
-              <div className="text-xs text-ai-400 uppercase tracking-wide mb-2">
+              <div className="text-xs text-text-muted uppercase tracking-wide mb-2">
                 {metric.label}
               </div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg text-warning-500">
+                <span className="text-lg text-warning-400">
                   {metric.current}
                 </span>
-                <span className="text-ai-400">→</span>
+                <span className="text-text-muted">→</span>
                 <span className="text-2xl font-bold text-success-500">
                   {metric.optimized}
                 </span>

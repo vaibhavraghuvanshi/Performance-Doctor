@@ -17,6 +17,11 @@ export interface Metrics {
     current: number;
     optimized: number;
   };
+  /** SEO / CWV–oriented readiness (0–100); optional for older cached payloads. */
+  seoReadiness?: {
+    current: number;
+    optimized: number;
+  };
 }
 
 export interface AnalysisResult {
@@ -31,4 +36,10 @@ export interface AnalysisResult {
 
 export type Platform = "ios" | "android" | "both";
 
-export type Screen = "input" | "diagnosis" | "comparison" | "summary";
+export type Screen =
+  | "input"
+  | "diagnosis"
+  | "comparison"
+  | "summary"
+  | "history"
+  | "settings";

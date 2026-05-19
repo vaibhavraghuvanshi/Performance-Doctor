@@ -58,3 +58,28 @@ export function calculatePerformanceScore(issues: Issue[]): number {
   });
   return Math.max(score, 0);
 }
+
+const SEO_CWV_SCORE_TYPES = new Set<string>([
+  "seo-next-head-title",
+  "cwv-img-layout",
+  "cwv-blocking-script",
+  "react-unsafe-html",
+]);
+
+/**
+ * Separate 0–100 score for SEO / CWV–adjacent static findings (title, CLS hints, blocking scripts, unsafe HTML).
+ */
+export function estimateSeoReadiness(issues: Issue[]): {
+  current: number;
+  optimized: number;
+} {
+  let score = 100;
+  for (const issue of issues) {
+    if (!SEO_CWV_SCORE_TYPES.has(issue.type)) continue;
+    if (issue.severity === "critical") score -= 28;
+    else if (issue.severity === "high") score -= 18;
+    else if (issue.severity === "medium") score -= 12;
+    else if (issue.severity === "low") score -= 5;
+  }
+  return { current: Math.max(score, 0), optimized: 100 };
+}

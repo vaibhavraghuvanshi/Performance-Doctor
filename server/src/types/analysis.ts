@@ -17,6 +17,8 @@ export interface Metrics {
   renderTime: { current: string; optimized: string };
   memory: { current: string; optimized: string };
   reRenders: { current: number; optimized: number };
+  /** SEO / CWV–related readiness (0–100); higher is better. */
+  seoReadiness: { current: number; optimized: number };
 }
 
 export interface AnalysisResult {

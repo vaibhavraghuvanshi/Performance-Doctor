@@ -1,7 +1,7 @@
 import React from "react";
 import { clsx } from "clsx";
 
-interface CardProps {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   hoverable?: boolean;
@@ -13,14 +13,16 @@ export const Card: React.FC<CardProps> = ({
   className,
   hoverable = false,
   glass = true,
+  ...rest
 }) => {
   return (
     <div
+      {...rest}
       className={clsx(
         "rounded-xl p-6 border",
         glass && "glass",
         hoverable && "card-hover cursor-pointer",
-        !glass && "bg-slate-800 border-slate-700",
+        !glass && "bg-background-elevated border-background-border",
         className,
       )}
     >

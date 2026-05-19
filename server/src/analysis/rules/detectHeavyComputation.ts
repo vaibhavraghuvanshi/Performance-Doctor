@@ -1,16 +1,17 @@
-import { NodePath } from "@babel/traverse";
+import type { NodePath } from "@babel/traverse";
 import * as t from "@babel/types";
+import { isInsideFunctionReturningJSX } from "./renderPath";
 
 /**
- * Detects heavy computation (loops, Array.map/filter/reduce) inside function components or render methods
+ * Detects heavy computation (loops, Array.map/filter/reduce) inside render-like paths.
  */
 export function detectHeavyComputation(path: NodePath, issues: any[]) {
-  // Detect for/while loops or Array.map/filter/reduce in function components
   if (
     path.isForStatement() ||
     path.isWhileStatement() ||
     path.isDoWhileStatement()
   ) {
+    if (!isInsideFunctionReturningJSX(path)) return;
     issues.push({
       id: `heavy-computation-${path.node.start}`,
       severity: "medium",
@@ -20,8 +21,9 @@ export function detectHeavyComputation(path: NodePath, issues: any[]) {
       impact: {},
       explanation: `Loops inside render or function components can cause performance issues. Move heavy computation outside render or memoize results.`,
     });
+    return;
   }
-  // Detect Array.map/filter/reduce in render
+
   if (path.isCallExpression()) {
     const callee = path.node.callee;
     if (
@@ -29,6 +31,7 @@ export function detectHeavyComputation(path: NodePath, issues: any[]) {
       t.isIdentifier(callee.property) &&
       ["map", "filter", "reduce"].includes(callee.property.name)
     ) {
+      if (!isInsideFunctionReturningJSX(path)) return;
       issues.push({
         id: `heavy-computation-${path.node.start}`,
         severity: "medium",

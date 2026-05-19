@@ -1,91 +1,110 @@
+# Performance Doctor (frontend)
 
-# Performance Doctor
+AI-assisted **React Native performance** analyzer: paste or upload TS/TSX, run **static AST rules** plus **Groq** suggestions, compare refactors, export reports, and review scorecards.
 
-Performance Doctor is a developer tool that uses AI to analyze React Native code, detect performance bottlenecks, and suggest practical optimizations quickly.
+---
 
-## Project Structure
+## MVP Phase 1 — status
 
-- Frontend (Vite + React + TypeScript): [src/](src/)
-- Backend API (TypeScript): [server/src/](server/src/)
-- Shared root config: [package.json](package.json), [vite.config.ts](vite.config.ts), [tailwind.config.js](tailwind.config.js), [eslint.config.js](eslint.config.js)
+| Area | What you get |
+|------|----------------|
+| **Monaco editor** | Full editor + read-only panels; **side-by-side** or **Monaco diff** refactor preview. |
+| **Code input** | Paste, **file upload**, quick examples, platform (iOS / Android / both). |
+| **RN-oriented analysis** | Server **Babel** traverse + RN-focused rules (lists, bridge hints, memo, etc.) merged with **LLM** output when `?ai=1`. |
+| **AI suggestions** | Groq-powered issues + optional `fix` text; hybrid merge with AST dedupe. |
+| **Refactor preview** | **Compare** screen: split view **or** unified **Diff view**. |
+| **Scorecards** | Diagnosis score, metrics, severity groups; summary improvement cards. |
+| **Report export** | Summary: **`.txt`**, **`.md`**, **`.json`** (full `AnalysisResult`, all issues + optimized code). |
+| **Public beta** | Optional banner: set `VITE_PUBLIC_BETA=1` in the **root** env and restart Vite. Deploy/run notes below. |
 
-## Repository Layout
+Static analysis is **JS/TSX AST–based**, tuned for RN patterns—not a replacement for on-device profiling.
 
-- App entry: [src/main.tsx](src/main.tsx)
-- Root app component: [src/App.tsx](src/App.tsx)
-- Styling: [src/index.css](src/index.css)
-- Frontend components: [src/components/](src/components/)
-- Frontend services: [src/services/](src/services/)
-- Frontend types: [src/types/](src/types/)
-- Frontend utils: [src/utils/](src/utils/)
-- Backend entry: [server/src/index.ts](server/src/index.ts)
-- Backend analysis logic: [server/src/analysis/](server/src/analysis/)
-- Backend middleware: [server/src/middleware/](server/src/middleware/)
-- Backend types: [server/src/types/](server/src/types/)
-- Backend utils: [server/src/utils/](server/src/utils/)
-- Public assets: [public/](public/)
-- Root type declarations: [types/issue.d.ts](types/issue.d.ts)
+---
 
-## Getting Started
+## Previously shipped (high level)
 
-### 1) Install dependencies
+- **Hybrid pipeline**: `POST /analyze?ai=1` runs AST + Groq, merges in `server/src/analysis/mergeIssues.ts`, recomputes metrics.
+- **API & dev UX**: Vite `/api` proxy, `VITE_API_URL` guard for `localhost:3000` without `/api`, client fetch timeout, Groq timeouts / fewer retries, optional `ANALYZE_API_KEY` relaxed outside `NODE_ENV=production`.
+- **Primary buttons**: solid (no gradient) in `Button.tsx`.
 
-From repo root:
+---
+
+## Quick start
+
+### 1. Frontend (Vite — default port `3000`)
 
 ```bash
 npm install
-```
-
-For backend:
-
-```bash
-cd server
-npm install
-```
-
-### 2) Configure environment
-
-- Root environment file: [.env](.env)
-- Backend example env: [server/.env.example](server/.env.example)
-
-Create `server/.env` from `server/.env.example` and set required values.
-
-### 3) Run development servers
-
-Frontend (from root):
-
-```bash
 npm run dev
 ```
 
-Backend (from `server/`):
+### 2. Backend (Express — default port `4000`)
+
+From `server/`:
 
 ```bash
-npm run dev
+cd server && npm install && npm run dev
 ```
 
-## Build
+Set **`GROQ_API_KEY`** in `server/.env` for AI analysis.
 
-Frontend build (from root):
+### 3. Wire the dev proxy
+
+Vite proxies **`/api/*`** → **`http://127.0.0.1:4000`** by default. If the API listens elsewhere:
 
 ```bash
-npm run build
+# repo root .env.local (example)
+VITE_API_PROXY_TARGET=http://127.0.0.1:3001
 ```
 
-Backend build (from `server/`):
+Do **not** set `VITE_API_URL=http://localhost:3000` without **`/api`** (the app corrects this in code, but `http://localhost:3000/api` is the explicit form).
 
-```bash
-npm run build
-```
+### 4. Optional env
 
-## Notes
+| Variable | Where | Purpose |
+|----------|--------|---------|
+| `VITE_PUBLIC_BETA` | Root | `1` → shows public beta banner. |
+| `VITE_ANALYZE_API_KEY` | Root | Must match server `ANALYZE_API_KEY` when enforcing in **production**. |
+| `ANALYZE_API_KEY` | Server | Optional; enforced only when `NODE_ENV=production` or `ANALYZE_API_KEY_FORCE=1`. |
+| `ANALYZE_LLM_ONLY` | Server | `1` → skip AST merge (debug). |
 
-- Frontend config: [tsconfig.app.json](tsconfig.app.json), [tsconfig.json](tsconfig.json), [tsconfig.node.json](tsconfig.node.json)
-- Backend config: [server/tsconfig.json](server/tsconfig.json)
-- CSS/PostCSS config: [postcss.config.cjs](postcss.config.cjs)
-- HTML template: [index.html](index.html)
+---
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Vite dev server |
+| `npm run build` | Typecheck + production bundle |
+| `npm run preview` | Preview production build |
+| `cd server && npm run dev` | API server |
+| `cd server && npm test` | Backend tests |
+
+---
+
+## Public beta / launch checklist
+
+1. **Secrets**: `GROQ_API_KEY` on the server only; never commit `.env`.
+2. **CORS / URL**: Production frontend should call the real API origin or same host reverse-proxy.
+3. **Rate limits**: Tune `ANALYZE_RATE_LIMIT_*` on the server if needed.
+4. **Beta flag**: `VITE_PUBLIC_BETA=1` for in-app messaging.
+5. **Monitoring**: Log Groq failures and 5xx from `server` (your platform’s logger).
+
+---
+
+## Repo layout (frontend)
+
+- `src/components/CodeEditor` — Monaco, upload, analyze CTA  
+- `src/components/Comparison` — Split + diff refactor preview  
+- `src/components/DiagnosisReport` — Issues, score, metrics  
+- `src/components/Summary` — Scorecards, **multi-format export**, share  
+- `src/services/api.ts` — `POST /api/analyze?ai=1`  
+- `src/utils/reportExport.ts` — TXT / MD / JSON builders  
+
+Backend: see **`server/README.md`**.
+
+---
 
 ## License
 
-See [LICENSE](LICENSE).
- 
+Private / team use unless otherwise noted in the repository.

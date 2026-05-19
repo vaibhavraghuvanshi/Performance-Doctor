@@ -1,203 +1,40 @@
-// import {
-//   detectFlatList,
-//   detectHeavyComputation,
-//   detectInlineFunctions,
-//   detectInlineObjects,
-//   detectMissingKeyExtractor,
-//   detectMissingMemo,
-// } from "./rules";
-// import { parse } from "@babel/parser";
-// import traverse from "@babel/traverse";
-// import type { AnalysisResult } from "../types/analysis";
-// import { callGroq } from "../utils/groqClient";
-// import {
-//   estimateFPS,
-//   estimateRenderTime,
-//   estimateMemory,
-//   estimateReRenders,
-//   calculatePerformanceScore,
-// } from "./metrics";
-
-// export function analyzeCode(code: string): AnalysisResult {
-//   const ast = parse(code, {
-//     sourceType: "module",
-//     plugins: ["typescript", "jsx"],
-//   });
-//   const issues: any[] = [];
-//   traverse(ast, {
-//     enter(path: any) {
-//       detectFlatList(path, issues);
-//       detectHeavyComputation(path, issues);
-//       detectInlineFunctions(path, issues);
-//       detectInlineObjects(path, issues);
-//       detectMissingKeyExtractor(path, issues);
-//       detectMissingMemo(path, issues);
-//     },
-//   });
-//   // Metrics & scoring
-//   const fps = estimateFPS(issues);
-//   const renderTime = estimateRenderTime(issues);
-//   const memory = estimateMemory(issues);
-//   const reRenders = estimateReRenders(issues);
-//   const score = calculatePerformanceScore(issues);
-//   let topSeverity = -1;
-//   let topBottleneck = null;
-//   const severityMap: Record<string, number> = {
-//     critical: 3,
-//     high: 2,
-//     medium: 1,
-//     low: 0,
-//   };
-//   for (const issue of issues) {
-//     if (severityMap[issue.severity] > topSeverity) {
-//       topSeverity = severityMap[issue.severity];
-//       topBottleneck = issue.title;
-//     }
-//   }
-//   return {
-//     overallScore: score,
-//     optimizedScore: 100,
-//     issues,
-//     metrics: {
-//       fps,
-//       renderTime,
-//       memory,
-//       reRenders,
-//     },
-//     optimizedCode: "",
-//     topBottleneck,
-//     analyzedAt: new Date().toISOString(),
-//   };
-// }
-
-// // Async Groq-powered analyzer
-// export async function analyzeCodeWithGroq(
-//   code: string,
-// ): Promise<AnalysisResult> {
-//   const prompt = `
-// Analyze the following React Native code for performance issues.
-// Return a JSON array of issues, each with title, severity, explanation, and suggested fix.
-// After the JSON, output ONLY the optimized version of the code in a Markdown code block (start with \`\`\`jsx and end with \`\`\`).
-// DO NOT include any explanation or text outside the JSON and code block.
-
-// Code to analyze:
-// ${code}
-// `;
-//   let issues: any[] = [];
-//   let optimizedCode = "";
-//   let topBottleneck = null;
-//   try {
-//     console.log("[Groq] About to call Groq LLM...");
-//     const responseText = await callGroq(prompt);
-//     console.log("[Groq] LLM response received:", responseText);
-//     // Extract issues JSON (robust to trailing characters)
-//     const match = responseText.match(/\[.*?\]/s);
-//     if (match) {
-//       let jsonStr = match[0];
-//       try {
-//         issues = JSON.parse(jsonStr);
-//       } catch (jsonErr) {
-//         // Try to trim after last closing bracket
-//         const lastBracket = jsonStr.lastIndexOf("]");
-//         if (lastBracket !== -1) {
-//           jsonStr = jsonStr.slice(0, lastBracket + 1);
-//           issues = JSON.parse(jsonStr);
-//         } else {
-//           throw jsonErr;
-//         }
-//       }
-//     } else {
-//       console.warn("[Groq] No issues JSON found in response.");
-//     }
-//     if (issues.length > 0) {
-//       topBottleneck = issues[0].title;
-//     }
-//     // Extract only the code block after the JSON array
-//     let codeBlockMatch = responseText.match(
-//       /\[.*?\][\s\S]*?```(?:jsx|tsx|js)?\s*([\s\S]*?)```/i,
-//     );
-//     if (!codeBlockMatch) {
-//       // Fallback: try to find any code block
-//       codeBlockMatch = responseText.match(
-//         /```(?:jsx|tsx|js)?\s*([\s\S]*?)```/i,
-//       );
-//     }
-//     if (codeBlockMatch) {
-//       optimizedCode = codeBlockMatch[1].trim();
-//       // Optionally, further trim to start at first import/export/function/const/let/var
-//       const codeStart = optimizedCode.search(
-//         /^(import |export |function |const |let |var )/m,
-//       );
-//       if (codeStart > 0) {
-//         optimizedCode = optimizedCode.slice(codeStart);
-//       }
-//       // Remove trailing markdown or text after the last closing brace/paren
-//       const lastBrace = Math.max(
-//         optimizedCode.lastIndexOf("}"),
-//         optimizedCode.lastIndexOf(">"),
-//       );
-//       if (lastBrace !== -1 && lastBrace + 1 < optimizedCode.length) {
-//         optimizedCode = optimizedCode.slice(0, lastBrace + 1);
-//       }
-//       optimizedCode = optimizedCode.trim();
-//       console.log(
-//         "[Groq] Extracted and formatted optimized code:",
-//         optimizedCode,
-//       );
-//     } else {
-//       console.warn("[Groq] No code block found in LLM response.");
-//     }
-//   } catch (err) {
-//     console.error("[Groq] API error in analyzer:", err);
-//     issues = [
-//       {
-//         title: "Groq API Error",
-//         severity: "critical",
-//         explanation: "Failed to analyze code.",
-//         suggestedFix: "Check API key and network.",
-//       },
-//     ];
-//     topBottleneck = "Groq API Error";
-//   }
-//   const fps = estimateFPS(issues);
-//   const renderTime = estimateRenderTime(issues);
-//   const memory = estimateMemory(issues);
-//   const reRenders = estimateReRenders(issues);
-//   const score = calculatePerformanceScore(issues);
-//   return {
-//     overallScore: score,
-//     optimizedScore: 100,
-//     issues,
-//     metrics: {
-//       fps,
-//       renderTime,
-//       memory,
-//       reRenders,
-//     },
-//     optimizedCode,
-//     topBottleneck,
-//     analyzedAt: new Date().toISOString(),
-//   };
-// }
-
 import {
+  detectBridgeNativeInRender,
+  detectBundleHeuristics,
+  detectCWVWebHints,
   detectFlatList,
+  detectFlatListKeyIndex,
+  detectFlatListTuning,
   detectHeavyComputation,
+  detectImageDimensions,
   detectInlineFunctions,
   detectInlineObjects,
+  detectJsonStringifyCost,
   detectMissingKeyExtractor,
   detectMissingMemo,
+  detectNativeEventEmitterCaveat,
+  detectNextJsDataFetching,
+  detectReactWebPatterns,
+  detectSectionList,
+  detectUseCallbackEmptyDepsJsx,
+  createNextHeadTracker,
+  trackNextHeadAndTitle,
+  finalizeMissingTitleIssue,
 } from "./rules";
 import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
-import type { AnalysisResult } from "../types/analysis";
+import type { AnalysisResult, Issue } from "../types/analysis";
+import type { Issue as MetricsIssue } from "../../types/issue";
+import { mergeAstAndLlmIssues, pickTopBottleneckFromIssues } from "./mergeIssues";
 import { callGroq } from "../utils/groqClient";
+import { mapLlmIssuesToIssues } from "./mapLlmIssues";
 import {
   estimateFPS,
   estimateRenderTime,
   estimateMemory,
   estimateReRenders,
   calculatePerformanceScore,
+  estimateSeoReadiness,
 } from "./metrics";
 
 export function analyzeCode(code: string): AnalysisResult {
@@ -206,36 +43,40 @@ export function analyzeCode(code: string): AnalysisResult {
     plugins: ["typescript", "jsx"],
   });
   const issues: any[] = [];
+  const nextHeadTracker = createNextHeadTracker();
   traverse(ast, {
     enter(path: any) {
+      trackNextHeadAndTitle(path, nextHeadTracker);
       detectFlatList(path, issues);
+      detectFlatListTuning(path, issues);
+      detectFlatListKeyIndex(path, issues);
+      detectSectionList(path, issues);
+      detectBridgeNativeInRender(path, issues);
+      detectJsonStringifyCost(path, issues);
+      detectNativeEventEmitterCaveat(path, issues);
+      detectImageDimensions(path, issues);
       detectHeavyComputation(path, issues);
       detectInlineFunctions(path, issues);
       detectInlineObjects(path, issues);
       detectMissingKeyExtractor(path, issues);
       detectMissingMemo(path, issues);
+      detectUseCallbackEmptyDepsJsx(path, issues);
+      detectReactWebPatterns(path, issues);
+      detectNextJsDataFetching(path, issues);
+      detectBundleHeuristics(path, issues);
+      detectCWVWebHints(path, issues);
     },
   });
+  finalizeMissingTitleIssue(nextHeadTracker, issues);
   // Metrics & scoring
-  const fps = estimateFPS(issues);
-  const renderTime = estimateRenderTime(issues);
-  const memory = estimateMemory(issues);
-  const reRenders = estimateReRenders(issues);
-  const score = calculatePerformanceScore(issues);
-  let topSeverity = -1;
-  let topBottleneck = null;
-  const severityMap: Record<string, number> = {
-    critical: 3,
-    high: 2,
-    medium: 1,
-    low: 0,
-  };
-  for (const issue of issues) {
-    if (severityMap[issue.severity] > topSeverity) {
-      topSeverity = severityMap[issue.severity];
-      topBottleneck = issue.title;
-    }
-  }
+  const mi = issues as MetricsIssue[];
+  const fps = estimateFPS(mi);
+  const renderTime = estimateRenderTime(mi);
+  const memory = estimateMemory(mi);
+  const reRenders = estimateReRenders(mi);
+  const score = calculatePerformanceScore(mi);
+  const seoReadiness = estimateSeoReadiness(mi);
+  const topBottleneck = pickTopBottleneckFromIssues(issues as Issue[]);
   return {
     overallScore: score,
     optimizedScore: 100,
@@ -245,6 +86,7 @@ export function analyzeCode(code: string): AnalysisResult {
       renderTime,
       memory,
       reRenders,
+      seoReadiness,
     },
     optimizedCode: "",
     topBottleneck,
@@ -419,12 +261,54 @@ function cleanExtractedCode(code: string): string {
   return code.trim();
 }
 
+function shouldMergeAstWithLlm(): boolean {
+  return process.env.ANALYZE_LLM_ONLY !== "1";
+}
+
 // Async Groq-powered analyzer
 export async function analyzeCodeWithGroq(
   code: string,
+  platform: string = "both",
 ): Promise<AnalysisResult> {
   const prompt = `
-Analyze the following React Native code for performance issues.
+Analyze the following React / React Native code for performance, SSR, bundle size, SEO, and Core Web Vitals–related issues.
+
+Target platform focus: ${platform} (ios | android | both). For web-only or Next.js code, still report SSR, data-fetching, head/metadata, image/layout, and script-loading concerns even when the platform is mobile-focused.
+
+## React (web) & hydration
+- Expensive render work, missing memoization, unstable props, context misuse.
+- dangerouslySetInnerHTML and other XSS-prone patterns.
+- Deprecated APIs (e.g. findDOMNode) and patterns that break concurrent rendering.
+
+## Next.js (Pages / App Router when inferable)
+- getServerSideProps / getStaticProps / getStaticPaths: TTFB, caching, ISR/revalidate tradeoffs.
+- next/head or metadata: unique title, meta description, Open Graph basics where relevant.
+- next/image vs raw <img>, next/script loading strategy (async/defer), dynamic import and client boundaries.
+
+## Bundle size
+- Heavy barrel imports (lodash default, large icon barrels), duplicative dependencies, oversized client chunks.
+
+## SEO & Core Web Vitals (heuristic; no lab measurement here)
+- CLS risks: images without dimensions, late-loading fonts without fallbacks (if visible in code).
+- INP / main-thread: long synchronous handlers, huge effects on mount.
+- LCP: hero image priority, avoid blocking scripts in critical path.
+
+## JS bridge / native interop (React Native — consider carefully)
+- NativeModules, TurboModuleRegistry.get, and synchronous native work during render or tight loops.
+- NativeEventEmitter subscriptions: ensure remove/cleanup on unmount; avoid leaking listeners.
+- Large object clones or chatty native calls across the bridge; batch or defer where possible.
+- After navigation or animations, defer non-urgent work with InteractionManager.runAfterInteractions when appropriate.
+
+## Memory (high-level; avoid false precision)
+- Images and assets: dimensions, caching, and avoiding unbounded in-memory lists of decoded images.
+- Global caches, module-level singletons holding large graphs, and unbounded list state.
+- useEffect cleanups for subscriptions, timers, and listeners; closure captures of large arrays/objects in long-lived callbacks.
+- On Android vs iOS, call out platform-relevant notes when ${platform} is not "both".
+
+## Lists / lists virtualization
+- FlatList / SectionList: keyExtractor, stable keys, item/row memoization, and tuning props (windowSize, maxToRenderPerBatch, removeClippedSubviews) for long lists.
+
+When an issue relates to bridge, memory, or lists, reflect that in the title (e.g. include words like "bridge", "native", "memory", "FlatList", "subscription") so it can be deduplicated against static checks.
 
 YOU MUST respond in this EXACT format:
 1. First, output a JSON array of issues with this structure:
@@ -449,9 +333,8 @@ Code to analyze:
 ${code}
 `;
 
-  let issues: any[] = [];
+  let llmIssues: Issue[] = [];
   let optimizedCode = "";
-  let topBottleneck = null;
 
   try {
     console.log("[Groq] About to call Groq LLM...");
@@ -461,44 +344,47 @@ ${code}
       responseText.slice(0, 500),
     );
 
-    // Extract issues JSON
-    issues = extractIssuesJSON(responseText);
+    llmIssues = mapLlmIssuesToIssues(extractIssuesJSON(responseText));
 
-    if (issues.length > 0) {
-      topBottleneck = issues[0].title;
+    if (llmIssues.length > 0) {
       console.log(
-        `[Groq] Found ${issues.length} issues, top bottleneck: ${topBottleneck}`,
+        `[Groq] Found ${llmIssues.length} issues from LLM`,
       );
     } else {
       console.warn("[Groq] No issues found in response");
     }
 
-    // Extract optimized code
     optimizedCode = extractOptimizedCode(responseText);
 
     if (!optimizedCode) {
       console.warn("[Groq] Failed to extract optimized code, using original");
-      optimizedCode = code; // Fallback to original code
+      optimizedCode = code;
     }
   } catch (err) {
     console.error("[Groq] API error in analyzer:", err);
-    issues = [
+    llmIssues = mapLlmIssuesToIssues([
       {
         title: "Groq API Error",
         severity: "critical",
         explanation: "Failed to analyze code with AI.",
         suggestedFix: "Check API key, network connection, and try again.",
       },
-    ];
-    topBottleneck = "Groq API Error";
-    optimizedCode = code; // Return original code on error
+    ]);
+    optimizedCode = code;
   }
 
-  const fps = estimateFPS(issues);
-  const renderTime = estimateRenderTime(issues);
-  const memory = estimateMemory(issues);
-  const reRenders = estimateReRenders(issues);
-  const score = calculatePerformanceScore(issues);
+  const issues: Issue[] = shouldMergeAstWithLlm()
+    ? mergeAstAndLlmIssues(analyzeCode(code).issues as Issue[], llmIssues)
+    : llmIssues;
+
+  const mi = issues as MetricsIssue[];
+  const fps = estimateFPS(mi);
+  const renderTime = estimateRenderTime(mi);
+  const memory = estimateMemory(mi);
+  const reRenders = estimateReRenders(mi);
+  const score = calculatePerformanceScore(mi);
+  const seoReadiness = estimateSeoReadiness(mi);
+  const topBottleneck = pickTopBottleneckFromIssues(issues);
 
   return {
     overallScore: score,
@@ -509,6 +395,7 @@ ${code}
       renderTime,
       memory,
       reRenders,
+      seoReadiness,
     },
     optimizedCode,
     topBottleneck,

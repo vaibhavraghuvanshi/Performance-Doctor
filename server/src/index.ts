@@ -1,43 +1,41 @@
-import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import { json } from "express";
+import { createApp } from "./app";
 
-import { errorHandler } from "./middleware/errorHandler";
-import { analyzeCode, analyzeCodeWithGroq } from "./analysis/analyzer";
+const app = createApp();
 
-const app = express();
+const preferred = Number(process.env.PORT);
+const startPort =
+  Number.isFinite(preferred) && preferred > 0 ? preferred : 4000;
+const maxAttempts = 15;
 
-app.use(cors());
-app.use(helmet());
-app.use(json());
+function listen(port: number, attempt: number): void {
+  if (attempt > maxAttempts) {
+    console.error(
+      `Could not bind after ${maxAttempts} attempts (from port ${startPort}).`,
+    );
+    process.exit(1);
+  }
 
-app.post("/analyze", (req, res, next) => {
-  (async () => {
-    try {
-      const { code } = req.body;
-      if (typeof code !== "string") {
-        return res
-          .status(400)
-          .json({ error: "Missing or invalid 'code' in request body" });
+  const server = app
+    .listen(port, () => {
+      const addr = server.address();
+      const bound =
+        typeof addr === "object" && addr !== null ? addr.port : port;
+      console.log(`Server running on port ${bound}`);
+      if (bound !== startPort) {
+        console.warn(
+          `(Port ${startPort} was in use; set PORT=${bound} in .env if the client expects a fixed port.)`,
+        );
       }
-      // If ?ai=1 is present, use Groq-powered analysis
-      if (req.query.ai === "1") {
-        const result = await analyzeCodeWithGroq(code);
-        res.json(result);
-      } else {
-        const result = analyzeCode(code);
-        res.json(result);
+    })
+    .on("error", (err: NodeJS.ErrnoException) => {
+      if (err.code === "EADDRINUSE") {
+        console.warn(`Port ${port} is already in use, trying ${port + 1}…`);
+        server.close(() => listen(port + 1, attempt + 1));
+        return;
       }
-    } catch (err) {
-      next(err);
-    }
-  })();
-});
+      console.error(err);
+      process.exit(1);
+    });
+}
 
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+listen(startPort, 1);

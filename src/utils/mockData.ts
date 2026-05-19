@@ -194,6 +194,10 @@ export const mockAnalysisResult: AnalysisResult = {
       current: 120,
       optimized: 12,
     },
+    seoReadiness: {
+      current: 78,
+      optimized: 100,
+    },
   },
   optimizedCode: `import React, { useCallback, useMemo } from 'react';
 import { FlatList, View, Text } from 'react-native';
@@ -270,7 +274,7 @@ const ProductScreen = ({ userId }) => {
             style={{ padding: 16, marginBottom: 8 }}
           >
             <Text>{item.name}</Text>
-            <Text>${item.price}</Text>
+            <Text>{"$"}{item.price}</Text>
           </TouchableOpacity>
         )}
       />

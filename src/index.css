@@ -5,10 +5,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===============================
-   Base
-================================ */
 @layer base {
+  html {
+    color-scheme: dark;
+  }
+
   body {
     @apply bg-background-main text-text-primary min-h-screen;
   }
@@ -18,50 +19,37 @@
   }
 }
 
-/* ===============================
-   Components
-================================ */
 @layer components {
-  /* Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    background-color: var(--color-background-muted, #23272f);
-    border-radius: 0.5rem;
+    @apply bg-background-soft rounded-lg;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-background-border rounded hover:bg-ai-300;
+    @apply rounded-md bg-background-border hover:bg-ai-600/60;
   }
 
-  /* Glass panel (light version) */
   .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-background-border;
+    @apply border border-background-border bg-background-card/75 backdrop-blur-2xl shadow-card;
   }
 
-  /* Gradient text (AI focus) */
   .gradient-text {
-    /* @apply bg-gradient-to-r from-ai-500 to-ai-700 bg-clip-text text-transparent; */
-    @apply bg-gradient-to-r from-ai-500 to-primary-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-ai-400 via-primary-400 to-ai-500 bg-clip-text text-transparent;
   }
 
-  /* Card hover polish */
   .card-hover {
-    @apply transition-all duration-300 hover:bg-ai-50 hover:border-ai-300 hover:-translate-y-1;
+    @apply transition-all duration-300 hover:-translate-y-0.5 hover:border-ai-500/40 hover:bg-background-elevated/80 hover:shadow-glow;
   }
 
-  /* Card */
   .card {
-    @apply bg-background-card border border-background-border rounded-2xl shadow-card p-6 transition-all duration-300;
+    @apply rounded-2xl border border-background-border bg-background-card p-6 shadow-card transition-all duration-300;
   }
 }
 
-/* ===============================
-   Utilities
-================================ */
 @layer utilities {
   .animate-delay-100 {
     animation-delay: 100ms;
@@ -73,18 +61,31 @@
     animation-delay: 300ms;
   }
 }
-/* ===============================
-   Html body
-================================ */
+
 body {
-  /* Gradient background */
-  background: linear-gradient(120deg, #f5f3ff 0%, #e0f2fe 100%);
+  background-color: #070709;
+  background-image:
+    radial-gradient(
+      ellipse 100% 60% at 50% -15%,
+      rgba(124, 58, 237, 0.22) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 45% at 100% 20%,
+      rgba(14, 165, 233, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 55% 40% at 0% 80%,
+      rgba(139, 92, 246, 0.08) 0%,
+      transparent 45%
+    ),
+    linear-gradient(180deg, #070709 0%, #0a0a10 45%, #070709 100%);
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* Bubble effect */
 .bg-bubbles {
   position: absolute;
   top: 0;
@@ -99,73 +100,82 @@ body {
   position: absolute;
   display: block;
   border-radius: 50%;
-  opacity: 0.25;
-  background: linear-gradient(135deg, #8b5cf6 0%, #38bdf8 100%);
-  animation: bubbleMove 5s linear infinite;
+  opacity: 0.12;
+  background: linear-gradient(135deg, #7c3aed 0%, #0ea5e9 100%);
+  filter: blur(0.5px);
+  animation: bubbleMove 8s ease-in-out infinite;
 }
 
-/* Left bubbles */
 .bubble-left-1 {
-  width: 120px;
-  height: 120px;
-  left: 10%;
-  top: 20%;
-}
-.bubble-left-2 {
-  width: 80px;
-  height: 80px;
-  left: 70%;
-  top: 10%;
-}
-.bubble-left-3 {
-  width: 100px;
-  height: 100px;
-  left: 50%;
-  top: 70%;
-}
-.bubble-left-4 {
-  width: 60px;
-  height: 60px;
-  left: 80%;
-  top: 60%;
-}
-.bubble-left-5 {
   width: 140px;
   height: 140px;
-  left: 30%;
-  top: 80%;
+  left: 8%;
+  top: 18%;
 }
-/* Right bubbles */
+.bubble-left-2 {
+  width: 90px;
+  height: 90px;
+  left: 72%;
+  top: 8%;
+  animation-delay: 1s;
+}
+.bubble-left-3 {
+  width: 110px;
+  height: 110px;
+  left: 48%;
+  top: 72%;
+  animation-delay: 2s;
+}
+.bubble-left-4 {
+  width: 70px;
+  height: 70px;
+  left: 82%;
+  top: 58%;
+  animation-delay: 0.5s;
+}
+.bubble-left-5 {
+  width: 160px;
+  height: 160px;
+  left: 28%;
+  top: 78%;
+  animation-delay: 1.5s;
+}
 .bubble-right-1 {
-  width: 80px;
-  height: 80px;
-  right: 5%;
-  top: 10%;
+  width: 90px;
+  height: 90px;
+  right: 4%;
+  top: 12%;
   left: unset;
+  animation-delay: 2.5s;
 }
 .bubble-right-2 {
-  width: 100px;
-  height: 100px;
-  right: 10%;
-  top: 60%;
+  width: 110px;
+  height: 110px;
+  right: 8%;
+  top: 62%;
   left: unset;
+  animation-delay: 1s;
 }
 .bubble-right-3 {
-  width: 60px;
-  height: 60px;
-  right: 15%;
-  top: 80%;
+  width: 70px;
+  height: 70px;
+  right: 14%;
+  top: 82%;
   left: unset;
+  animation-delay: 3s;
 }
 
 @keyframes bubbleMove {
   0% {
     transform: translateY(0) scale(1);
+    opacity: 0.1;
   }
   50% {
-    transform: translateY(-40px) scale(1.1);
+    transform: translateY(-32px) scale(1.05);
+    opacity: 0.16;
   }
   100% {
     transform: translateY(0) scale(1);
+    opacity: 0.1;
   }
 }

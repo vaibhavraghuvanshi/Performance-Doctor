@@ -1,47 +1,24 @@
-# ======================
-# Dependencies (all levels)
-# ======================
-node_modules/
-**/node_modules/
-
-# ======================
-# Environment files
-# ======================
-.env
-.env.*
-!.env.example
-
-# ======================
-# ESLint
-# ======================
-eslint.config.js
-
-# ======================
-# Build outputs
-# ======================
-dist/
-build/
-**/dist/
-**/build/
-
-# ======================
 # Logs
-# ======================
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# ======================
-# OS / Editor junk
-# ======================
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# ======================
-# Optional cache
-# ======================
-.cache
-.tmp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

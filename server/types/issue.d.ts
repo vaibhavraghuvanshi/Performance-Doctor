@@ -7,7 +7,18 @@ export type IssueType =
   | "missing-memo"
   | "hook-dependencies"
   | "heavy-computation"
-  | "missing-get-item-layout";
+  | "missing-get-item-layout"
+  | "llm-insight"
+  | "flatlist"
+  | "flatlist-tuning"
+  | "flatlist-key-index"
+  | "sectionlist"
+  | "sectionlist-key-extractor"
+  | "bridge-native-call"
+  | "json-stringify-cost"
+  | "native-event-emitter"
+  | "image-dimensions"
+  | "usecallback-empty-deps-jsx";
 
 export interface Location {
   start: number;

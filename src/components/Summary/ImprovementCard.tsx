@@ -41,14 +41,14 @@ export const ImprovementCard: React.FC<ImprovementCardProps> = ({
       transition={{ duration: 0.5 }}
       whileHover={{ scale: 1.05 }}
     >
-      <Card className="h-full bg-ai-50 border border-ai-100">
-        <div className="text-sm text-ai-400 mb-3 font-medium">{label}</div>
+      <Card className="h-full border-background-border ring-1 ring-white/5">
+        <div className="text-sm text-text-muted mb-3 font-medium">{label}</div>
         <div className="flex items-center gap-3 mb-3">
-          <span className="text-lg text-warning-500 font-semibold">
+          <span className="text-lg text-warning-400 font-semibold">
             {currentValue}
             {unit}
           </span>
-          <span className="text-ai-400">→</span>
+          <span className="text-text-muted">→</span>
           <span className="text-3xl font-bold text-success-500">
             {optimizedValue}
             {unit}

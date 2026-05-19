@@ -1,6 +1,6 @@
 import React from "react";
-import { Card } from "../common/Card";
 import { clsx } from "clsx";
+import { Bot, Check, Globe2, Smartphone } from "lucide-react";
 import type { Platform } from "../../types/analysis";
 
 interface PlatformSelectorProps {
@@ -12,34 +12,70 @@ export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
   platform,
   onChange,
 }) => {
-  const platforms: { value: Platform; label: string; emoji: string }[] = [
-    { value: "ios", label: "iOS", emoji: "📱" },
-    { value: "android", label: "Android", emoji: "🤖" },
-    { value: "both", label: "Both", emoji: "🌐" },
+  const platforms: {
+    value: Platform;
+    label: string;
+    icon: React.ReactNode;
+  }[] = [
+    {
+      value: "ios",
+      label: "iOS",
+      icon: <Smartphone className="h-7 w-7" strokeWidth={1.5} aria-hidden />,
+    },
+    {
+      value: "android",
+      label: "Android",
+      icon: <Bot className="h-7 w-7" strokeWidth={1.5} aria-hidden />,
+    },
+    {
+      value: "both",
+      label: "Both",
+      icon: <Globe2 className="h-7 w-7" strokeWidth={1.5} aria-hidden />,
+    },
   ];
 
   return (
-    <Card>
-      <h3 className="text-sm font-semibold text-ai-500 mb-4 uppercase tracking-wide">
-        Platform
-      </h3>
-      <div className="flex gap-2">
-        {platforms.map((p) => (
+    <div className="grid grid-cols-3 gap-2">
+      {platforms.map((p) => {
+        const selected = platform === p.value;
+        return (
           <button
             key={p.value}
+            type="button"
             onClick={() => onChange(p.value)}
             className={clsx(
-              "flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-300",
-              platform === p.value
-                ? "bg-ai-500 text-white shadow-soft border-2 border-ai-500"
-                : "bg-white/60 text-ai-600 border border-ai-200 hover:bg-ai-100 hover:text-ai-700",
+              "relative flex flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-4 text-center transition-all duration-200 min-h-[100px]",
+              selected
+                ? "border-calm-500 bg-calm-500/15 shadow-[0_0_20px_rgba(77,143,135,0.18)] ring-1 ring-calm-500/35"
+                : "border-background-border bg-background-soft/80 hover:border-calm-500/40 hover:bg-background-card",
             )}
           >
-            <span className="mr-1">{p.emoji}</span>
-            {p.label}
+            {selected && (
+              <span
+                className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-calm-500 text-white shadow-sm"
+                aria-hidden
+              >
+                <Check className="h-3 w-3" strokeWidth={3} />
+              </span>
+            )}
+            <span
+              className={clsx(
+                selected ? "text-calm-300" : "text-text-muted",
+              )}
+            >
+              {p.icon}
+            </span>
+            <span
+              className={clsx(
+                "text-xs font-semibold",
+                selected ? "text-calm-200" : "text-text-secondary",
+              )}
+            >
+              {p.label}
+            </span>
           </button>
-        ))}
-      </div>
-    </Card>
+        );
+      })}
+    </div>
   );
 };
